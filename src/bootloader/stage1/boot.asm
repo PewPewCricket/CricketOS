@@ -30,7 +30,7 @@ ebr_drive_number:           db 0                    ; 0x00 floppy, 0x80 hdd, use
                             db 0                    ; reserved
 ebr_signature:              db 29h
 ebr_volume_id:              db 12h, 34h, 56h, 78h   ; serial number, value doesn't matter
-ebr_volume_label:           db 'NANOBYTE OS'        ; 11 bytes, padded with spaces
+ebr_volume_label:           db 'CRICKET OS '        ; 11 bytes, padded with spaces
 ebr_system_id:              db 'FAT12   '           ; 8 bytes
 
 ;
@@ -364,8 +364,8 @@ disk_reset:
 
 msg_loading:            db 'Loading...', ENDL, 0
 msg_read_failed:        db 'Read from disk failed!', ENDL, 0
-msg_kernel_not_found:   db 'KERNEL.BIN file not found!', ENDL, 0
-file_kernel_bin:        db 'KERNEL  BIN'
+msg_kernel_not_found:   db 'STAGE2.BIN file not found!', ENDL, 0
+file_kernel_bin:        db 'STAGE2  BIN'
 kernel_cluster:         dw 0
 
 KERNEL_LOAD_SEGMENT     equ 0x2000

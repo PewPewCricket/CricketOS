@@ -3,12 +3,12 @@ ASM?=nasm
 
 .PHONY: all clean
 
-all: stage2
+all: kernel
 
-stage2: $(BUILD_DIR)/stage2.bin
+kernel: $(BUILD_DIR)/kernel.bin
 
-$(BUILD_DIR)/stage2.bin:
-	$(ASM) boot.asm -f bin -o $(BUILD_DIR)/stage2.bin
+$(BUILD_DIR)/kernel.bin:
+	$(ASM) main.asm -f bin -o $(BUILD_DIR)/kernel.bin
 
 clean:
-	rm -f $(BUILD_DIR)/stage2.bin
+	rm -f $(BUILD_DIR)/kernel.bin

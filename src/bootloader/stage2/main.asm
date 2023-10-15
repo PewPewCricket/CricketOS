@@ -42,4 +42,4 @@ puts:
     pop si
     ret
 
-msg_hello: db 'Hello world from KERNEL!', ENDL, 0
+msg_hello: db 'Hello world from BOOTLOADER_STAGE_2!', ENDL, 0

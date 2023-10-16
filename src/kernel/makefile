@@ -1,5 +1,5 @@
 ASM?=nasm
-CC16?=/usr/bin/watcom/binl/wcc
+CC16?=/usr/bin/watcom/binl64/wcc
 LD16?=/usr/bin/watcom/binl64/wlink
 
 BUILD_DIR?=build/

@@ -11,11 +11,11 @@ entry:
     mov ss, ax
     mov sp, 0
     mov bp, sp
-    section
+    sti
 
     ; expect boot drive in dl, send it as arg to cstart function
     xor dh, dh
-    oush dx
+    push dx
     call _cstart_
 
     cli

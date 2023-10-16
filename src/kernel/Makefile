@@ -1,10 +1,7 @@
-ASM?=nasm
-CC16?=/usr/bin/watcom/binl64/wcc
-LD16?=/usr/bin/watcom/binl64/wlink
-
 BUILD_DIR?=build/
+ASM?=nasm
 
-.PHONY: all clean
+.PHONY: all kernel clean
 
 all: kernel
 

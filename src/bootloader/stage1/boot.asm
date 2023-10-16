@@ -7,7 +7,7 @@ bits 16
 
 ;
 ; FAT12 header
-;
+; 
 jmp short start
 nop
 
@@ -30,7 +30,7 @@ ebr_drive_number:           db 0                    ; 0x00 floppy, 0x80 hdd, use
                             db 0                    ; reserved
 ebr_signature:              db 29h
 ebr_volume_id:              db 12h, 34h, 56h, 78h   ; serial number, value doesn't matter
-ebr_volume_label:           db 'CRICKET OS '        ; 11 bytes, padded with spaces
+ebr_volume_label:           db 'NANOBYTE OS'        ; 11 bytes, padded with spaces
 ebr_system_id:              db 'FAT12   '           ; 8 bytes
 
 ;
@@ -42,7 +42,7 @@ start:
     mov ax, 0           ; can't set ds/es directly
     mov ds, ax
     mov es, ax
-
+    
     ; setup stack
     mov ss, ax
     mov sp, 0x7C00              ; stack grows downwards from where we are loaded in memory
@@ -106,31 +106,31 @@ start:
     mov bx, buffer                      ; es:bx = buffer
     call disk_read
 
-    ; search for Stage2.bin
+    ; search for kernel.bin
     xor bx, bx
     mov di, buffer
 
-.search_Stage2:
-    mov si, file_Stage2_bin
+.search_kernel:
+    mov si, file_stage2_bin
     mov cx, 11                          ; compare up to 11 characters
     push di
     repe cmpsb
     pop di
-    je .found_Stage2
+    je .found_kernel
 
     add di, 32
     inc bx
     cmp bx, [bdb_dir_entries_count]
-    jl .search_Stage2
+    jl .search_kernel
 
-    ; Stage2 not found
-    jmp Stage2_not_found_error
+    ; kernel not found
+    jmp kernel_not_found_error
 
-.found_Stage2:
+.found_kernel:
 
     ; di should have the address to the entry
     mov ax, [di + 26]                   ; first logical cluster field (offset 26)
-    mov [Stage2_cluster], ax
+    mov [stage2_cluster], ax
 
     ; load FAT from disk into memory
     mov ax, [bdb_reserved_sectors]
@@ -139,18 +139,18 @@ start:
     mov dl, [ebr_drive_number]
     call disk_read
 
-    ; read Stage2 and process FAT chain
-    mov bx, STAGE2_LOAD_SEGMENT
+    ; read kernel and process FAT chain
+    mov bx, KERNEL_LOAD_SEGMENT
     mov es, bx
-    mov bx, STAGE2_LOAD_OFFSET
+    mov bx, KERNEL_LOAD_OFFSET
 
-.load_Stage2_loop:
-
+.load_kernel_loop:
+    
     ; Read next cluster
-    mov ax, [Stage2_cluster]
-
+    mov ax, [stage2_cluster]
+    
     ; not nice :( hardcoded value
-    add ax, 31                          ; first cluster = (Stage2_cluster - 2) * sectors_per_cluster + start_sector
+    add ax, 31                          ; first cluster = (stage2_cluster - 2) * sectors_per_cluster + start_sector
                                         ; start sector = reserved + fats + root directory size = 1 + 18 + 134 = 33
     mov cl, 1
     mov dl, [ebr_drive_number]
@@ -159,7 +159,7 @@ start:
     add bx, [bdb_bytes_per_sector]
 
     ; compute location of next cluster
-    mov ax, [Stage2_cluster]
+    mov ax, [stage2_cluster]
     mov cx, 3
     mul cx
     mov cx, 2
@@ -183,19 +183,19 @@ start:
     cmp ax, 0x0FF8                      ; end of chain
     jae .read_finish
 
-    mov [Stage2_cluster], ax
-    jmp .load_Stage2_loop
+    mov [stage2_cluster], ax
+    jmp .load_kernel_loop
 
 .read_finish:
-
-    ; jump to our Stage2
+    
+    ; jump to our kernel
     mov dl, [ebr_drive_number]          ; boot device in dl
 
-    mov ax, STAGE2_LOAD_SEGMENT         ; set segment registers
+    mov ax, KERNEL_LOAD_SEGMENT         ; set segment registers
     mov ds, ax
     mov es, ax
 
-    jmp STAGE2_LOAD_SEGMENT:STAGE2_LOAD_OFFSET
+    jmp KERNEL_LOAD_SEGMENT:KERNEL_LOAD_OFFSET
 
     jmp wait_key_and_reboot             ; should never happen
 
@@ -212,8 +212,8 @@ floppy_error:
     call puts
     jmp wait_key_and_reboot
 
-Stage2_not_found_error:
-    mov si, msg_Stage2_not_found
+kernel_not_found_error:
+    mov si, msg_stage2_not_found
     call puts
     jmp wait_key_and_reboot
 
@@ -252,7 +252,7 @@ puts:
 .done:
     pop bx
     pop ax
-    pop si
+    pop si    
     ret
 
 ;
@@ -314,7 +314,7 @@ disk_read:
     push cx                             ; temporarily save CL (number of sectors to read)
     call lba_to_chs                     ; compute CHS
     pop ax                              ; AL = number of sectors to read
-
+    
     mov ah, 02h
     mov di, 3                           ; retry count
 
@@ -363,13 +363,13 @@ disk_reset:
 
 
 msg_loading:            db 'Loading...', ENDL, 0
-msg_read_failed:        db 'Disk read failed!', ENDL, 0
-msg_Stage2_not_found:   db 'STAGE2.BIN not found!', ENDL, 0
-file_Stage2_bin:        db 'STAGE2  BIN'
-Stage2_cluster:         dw 0
+msg_read_failed:        db 'Read from disk failed!', ENDL, 0
+msg_stage2_not_found:   db 'STAGE2.BIN file not found!', ENDL, 0
+file_stage2_bin:        db 'STAGE2  BIN'
+stage2_cluster:         dw 0
 
-STAGE2_LOAD_SEGMENT     equ 0x2000
-STAGE2_LOAD_OFFSET      equ 0
+KERNEL_LOAD_SEGMENT     equ 0x2000
+KERNEL_LOAD_OFFSET      equ 0
 
 
 times 510-($-$$) db 0

@@ -39,7 +39,7 @@ puts:
 .done:
     pop bx
     pop ax
-    pop si
+    pop si    
     ret
 
 msg_hello: db 'Hello world from KERNEL!', ENDL, 0

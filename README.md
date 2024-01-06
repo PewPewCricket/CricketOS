@@ -2,9 +2,12 @@
 
 An Operating system for x86 BIOS systems written in full assembly!
 
+Bootloader: WIP
+Kernel: TODO
+CLI: TODO
+
 Roadmap:
-- Stage 1 Bootloader (DONE)
-- Stage 2 Bootloader (WIP)
+- Add a Bootloader (WIP)
 - Custom Kernel (TODO)
 - Basic UNIX-like CLI and Tools (TODO)
 - Kernel/Userspace Seperation (TODO)

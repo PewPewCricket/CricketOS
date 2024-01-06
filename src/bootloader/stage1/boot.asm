@@ -61,7 +61,7 @@ start:
 
     ; show loading message
     mov si, msg_loading
-    call puts
+    call print
 
     ; read drive parameters (sectors per track and head count),
     ; instead of relying on data on formatted disk
@@ -106,27 +106,27 @@ start:
     mov bx, buffer                      ; es:bx = buffer
     call disk_read
 
-    ; search for kernel.bin
+    ; search for stage 2
     xor bx, bx
     mov di, buffer
 
-.search_kernel:
+.search_stage2:
     mov si, file_stage2_bin
     mov cx, 11                          ; compare up to 11 characters
     push di
     repe cmpsb
     pop di
-    je .found_kernel
+    je .found_stage2
 
     add di, 32
     inc bx
     cmp bx, [bdb_dir_entries_count]
-    jl .search_kernel
+    jl .search_stage2
 
-    ; kernel not found
-    jmp kernel_not_found_error
+    ; stage 2 not found
+    jmp stage2_not_found_error
 
-.found_kernel:
+.found_stage2:
 
     ; di should have the address to the entry
     mov ax, [di + 26]                   ; first logical cluster field (offset 26)
@@ -139,12 +139,12 @@ start:
     mov dl, [ebr_drive_number]
     call disk_read
 
-    ; read kernel and process FAT chain
-    mov bx, KERNEL_LOAD_SEGMENT
+    ; read stage 2 and process FAT chain
+    mov bx, STAGE2_LOAD_SEGMENT
     mov es, bx
-    mov bx, KERNEL_LOAD_OFFSET
+    mov bx, STAGE2_LOAD_OFFSET
 
-.load_kernel_loop:
+.load_stage2_loop:
     
     ; Read next cluster
     mov ax, [stage2_cluster]
@@ -184,18 +184,18 @@ start:
     jae .read_finish
 
     mov [stage2_cluster], ax
-    jmp .load_kernel_loop
+    jmp .load_stage2_loop
 
 .read_finish:
     
-    ; jump to our kernel
+    ; jump to stage 2
     mov dl, [ebr_drive_number]          ; boot device in dl
 
-    mov ax, KERNEL_LOAD_SEGMENT         ; set segment registers
+    mov ax, STAGE2_LOAD_SEGMENT         ; set segment registers
     mov ds, ax
     mov es, ax
 
-    jmp KERNEL_LOAD_SEGMENT:KERNEL_LOAD_OFFSET
+    jmp STAGE2_LOAD_SEGMENT:STAGE2_LOAD_OFFSET
 
     jmp wait_key_and_reboot             ; should never happen
 
@@ -209,12 +209,12 @@ start:
 
 floppy_error:
     mov si, msg_read_failed
-    call puts
+    call print
     jmp wait_key_and_reboot
 
-kernel_not_found_error:
+stage2_not_found_error:
     mov si, msg_stage2_not_found
-    call puts
+    call print
     jmp wait_key_and_reboot
 
 wait_key_and_reboot:
@@ -232,7 +232,7 @@ wait_key_and_reboot:
 ; Params:
 ;   - ds:si points to string
 ;
-puts:
+print:
     ; save registers we will modify
     push si
     push ax
@@ -368,8 +368,8 @@ msg_stage2_not_found:   db 'STAGE2.BIN file not found!', ENDL, 0
 file_stage2_bin:        db 'STAGE2  BIN'
 stage2_cluster:         dw 0
 
-KERNEL_LOAD_SEGMENT     equ 0x2000
-KERNEL_LOAD_OFFSET      equ 0
+STAGE2_LOAD_SEGMENT     equ 0x2000
+STAGE2_LOAD_OFFSET      equ 0
 
 
 times 510-($-$$) db 0

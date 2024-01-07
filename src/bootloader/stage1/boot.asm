@@ -361,9 +361,13 @@ disk_reset:
     popa
     ret
 
+;
+; Data goes here
+;
 
-msg_loading:            db 'Loading...', ENDL, 0
-msg_read_failed:        db 'Read from disk failed!', ENDL, 0
+msg_loading:            db 'Loading STAGE2.BIN...', ENDL, 0
+msg_read_failed:        db 'Disk read failed!', ENDL, 0
+
 msg_stage2_not_found:   db 'STAGE2.BIN not found!', ENDL, 0
 file_stage2_bin:        db 'STAGE2  BIN'
 stage2_cluster:         dw 0
@@ -376,3 +380,5 @@ times 510-($-$$) db 0
 dw 0AA55h
 
 buffer:
+
+; this file can only hold 2 more bytes before the 512 byte limit is reached, you can NOT extend length of messages!

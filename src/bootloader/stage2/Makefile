@@ -3,12 +3,11 @@ ASM?=nasm
 
 .PHONY: all clean
 
-all: stage2
+all: stage2 
 
 stage2: $(BUILD_DIR)/stage2.bin
-
 $(BUILD_DIR)/stage2.bin:
-	$(ASM) test.asm -f bin -o $(BUILD_DIR)/stage2.bin
+	$(ASM) stage2.asm -f bin -o $(BUILD_DIR)/stage2.bin
 
 clean:
 	rm -f $(BUILD_DIR)/stage2.bin
